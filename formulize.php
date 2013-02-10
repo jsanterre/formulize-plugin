@@ -1,4 +1,5 @@
 <?php
+require_once $formulize_path."/integration_api.php";
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
@@ -6,7 +7,8 @@ defined('_JEXEC') or die('Restricted access');
 // Get the path to Formulize stored as a component parameters
 $params = JComponentHelper::getParams( 'com_formulize' );
 $formulize_path = $params->get('formulize_path');
-require_once $formulize_path."/integration_api.php";
+$application = JFactory::getApplication();
+
 
 class plgUserFormulize extends JPlugin
 {
@@ -30,7 +32,6 @@ class plgUserFormulize extends JPlugin
 		//$flag = Formulize::openSessionSomething();
 	
 		// For debugging
-		$application = JFactory::getApplication();
 		$name = $formulizeUser->uname;
 		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
  
@@ -49,7 +50,6 @@ class plgUserFormulize extends JPlugin
 		$formulizeUser->login_name = $joomlaUser->username;
 		$formulizeUser->email = $joomlaUser->email;
 		// For debugging
-		$application = JFactory::getApplication();
 		$name = $formulizeUser->uname;
 		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
 		
@@ -57,15 +57,21 @@ class plgUserFormulize extends JPlugin
 		{
 			// Create a user in Formulize
 			$flag = Formulize::createUser($formulizeUser);
+			if ( !$flag ) {
+				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError creating new user'), 'error');
+			}
 		}
 		else
 		{
-			// Do user update
-			// API is not ready???
-			//$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
+			// TODO: checking if the user is in formulize install
+
+			$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
+			if ( !$flag ) {
+				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError updating user/'), 'error');
+			}
 		}
 		
-        return true;
+        return flag;
     }
 	
 	public function onUserBeforeDelete($user)
@@ -79,7 +85,6 @@ class plgUserFormulize extends JPlugin
 		//$flag = Formulize::deleteUser($userID);
 	
 		// For debugging
-		$application = JFactory::getApplication();
 		$application->enqueueMessage(JText::_('User id:'.$userID), 'message');
 		
         return true;
