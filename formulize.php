@@ -7,6 +7,9 @@ defined('_JEXEC') or die('Restricted access');
 // Get the path to Formulize stored as a component parameters
 $params = JComponentHelper::getParams( 'com_formulize' );
 $formulize_path = $params->get('formulize_path');
+
+// TODO: Is this the place to put it?
+Formulize::init();
 $application = JFactory::getApplication();
 
 
@@ -81,9 +84,10 @@ class plgUserFormulize extends JPlugin
 		$userID = $joomlaUser->id;
 		
 		// Delete the user in Formulize
-		// API is not ready???
-		//$flag = Formulize::deleteUser($userID);
-	
+		$flag = Formulize::deleteUser($userID);
+		if ( !$flag ) {
+			$application->enqueueMessage(JText::_('User id:'.$userID.'\nError deleting user/'), 'error');
+		}
 		// For debugging
 		$application->enqueueMessage(JText::_('User id:'.$userID), 'message');
 		
