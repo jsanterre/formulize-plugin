@@ -99,11 +99,10 @@ class plgUserFormulize extends JPlugin
 		$userID = $joomlaUser->id;
 		
 		// Delete the user in Formulize
-		// API is not ready???
-		//$flag = Formulize::deleteUser($userID);
-		//if ( !$flag ) {
-		//		$application->enqueueMessage(JText::_('User id:'.$userID.'\nError updating user/'), 'error');
-		//}
+		$flag = Formulize::deleteUser($userID);
+		if ( !$flag ) {
+				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError deleting user/'), 'error');
+		}
 	
 		// For debugging
 		// Need the call to getApplication() inside the function!!!
