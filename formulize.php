@@ -1,5 +1,4 @@
 <?php
-require_once $formulize_path."/integration_api.php";
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
@@ -7,34 +6,49 @@ defined('_JEXEC') or die('Restricted access');
 // Get the path to Formulize stored as a component parameters
 $params = JComponentHelper::getParams( 'com_formulize' );
 $formulize_path = $params->get('formulize_path');
-$application = JFactory::getApplication();
-
+require_once $formulize_path."/integration_api.php";
 
 class plgUserFormulize extends JPlugin
 {
-	// Need to add onUserLogout as well...
-	// Not ready... The call to getUser doesn't seem to work...
-	// Necessary since $user doesn't contain user id
+	/*
+		Note to Jeff:
+		Need to add this code in session.php
+		if(isset($GLOBALS['joomlaUserId'])) { // Joomla
+		    $externalUid = $GLOBALS['joomlaUserId'];
+		}
+	*/
 	public function onUserLogin($user, $options)
 	{
-        // Get the current user
-		$joomlaUser =& JFactory::getUser($user['username']);
-		// Create a new blank user for Formulize session
-		$formulizeUser =& JFactory::getUser(0);
-		// Build Formulize user
-		$formulizeUser->uid = $joomlaUser->id;
-		$formulizeUser->uname = $joomlaUser->name;
-		$formulizeUser->login_name = $joomlaUser->username;
-		$formulizeUser->email = $joomlaUser->email;
-		
-		// Create a session in Formulize
-		// API is not ready???
-		//$flag = Formulize::openSessionSomething();
-	
+		// Search for the current userId
+		// Need to query the database (weird)
+		$email = $user['email'];
+		$db = JFactory::getDbo();
+        $query = $db->getQuery(true);      
+        $query->select('id,name')
+			->from('#__users ')
+			->where('email = ' .  "'". $email . "'" );            
+        $db->setQuery($query);    
+        if (!$db->query()) {
+			$this->setError($this->_db->getErrorMsg());
+			return false;
+        }                         
+		$rows = $db->loadObjectList();
+		foreach($rows as $row){   
+			$userId = $row->id;
+		}
+		// Set $GLOBALS to pass userId to the Formulize system
+		$GLOBALS['joomlaUserId'] = $userId;
+		// Start session in formulize
+		Formulize::init();
+
 		// For debugging
-		$name = $formulizeUser->uname;
-		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
- 
+		// Need the call to getApplication() inside the function!!!
+		// Will be removed anyway...
+		$application = JFactory::getApplication();
+		$session = session_id();
+		$application->enqueueMessage(JText::_('User ID:'.$GLOBALS['joomlaUserId']), 'message');
+		$application->enqueueMessage(JText::_('Session ID:'.$session), 'message');
+		
         return true;
     }
 	
@@ -49,10 +63,8 @@ class plgUserFormulize extends JPlugin
 		$formulizeUser->uname = $joomlaUser->name;
 		$formulizeUser->login_name = $joomlaUser->username;
 		$formulizeUser->email = $joomlaUser->email;
-		// For debugging
-		$name = $formulizeUser->uname;
-		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
 		
+		// Create or update user in Formulize
 		if($isnew)
 		{
 			// Create a user in Formulize
@@ -63,13 +75,19 @@ class plgUserFormulize extends JPlugin
 		}
 		else
 		{
-			// TODO: checking if the user is in formulize install
-
+			// Update a user in Formulize
 			$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
 			if ( !$flag ) {
 				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError updating user/'), 'error');
 			}
 		}
+		
+		// For debugging
+		// Need the call to getApplication() inside the function!!!
+		// Will be removed anyway...
+		$application = JFactory::getApplication();
+		$name = $formulizeUser->uname;
+		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
 		
         return flag;
     }
@@ -83,8 +101,14 @@ class plgUserFormulize extends JPlugin
 		// Delete the user in Formulize
 		// API is not ready???
 		//$flag = Formulize::deleteUser($userID);
+		//if ( !$flag ) {
+		//		$application->enqueueMessage(JText::_('User id:'.$userID.'\nError updating user/'), 'error');
+		//}
 	
 		// For debugging
+		// Need the call to getApplication() inside the function!!!
+		// Will be removed anyway...
+		$application = JFactory::getApplication();
 		$application->enqueueMessage(JText::_('User id:'.$userID), 'message');
 		
         return true;
