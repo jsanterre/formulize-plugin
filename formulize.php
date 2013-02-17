@@ -19,6 +19,7 @@ class plgUserFormulize extends JPlugin
 	*/
 	public function onUserLogin($user, $options)
 	{
+		$application = JFactory::getApplication();
 		// Search for the current userId
 		// Need to query the database (weird)
 		$email = $user['email'];
@@ -42,9 +43,6 @@ class plgUserFormulize extends JPlugin
 		Formulize::init();
 
 		// For debugging
-		// Need the call to getApplication() inside the function!!!
-		// Will be removed anyway...
-		$application = JFactory::getApplication();
 		$session = session_id();
 		$application->enqueueMessage(JText::_('User ID:'.$GLOBALS['joomlaUserId']), 'message');
 		$application->enqueueMessage(JText::_('Session ID:'.$session), 'message');
@@ -54,7 +52,8 @@ class plgUserFormulize extends JPlugin
 	
 	public function onUserAfterSave($user, $isnew, $success, $msg)
 	{
-		// Get the new user
+		$application = JFactory::getApplication();
+		// Get the user
 		$joomlaUser =& JFactory::getUser($user['username']);
 		// Create a new blank user for Formulize session
 		$formulizeUser =& JFactory::getUser(0);
@@ -83,9 +82,6 @@ class plgUserFormulize extends JPlugin
 		}
 		
 		// For debugging
-		// Need the call to getApplication() inside the function!!!
-		// Will be removed anyway...
-		$application = JFactory::getApplication();
 		$name = $formulizeUser->uname;
 		$application->enqueueMessage(JText::_('User name:'.$name), 'message');
 		
@@ -94,6 +90,7 @@ class plgUserFormulize extends JPlugin
 	
 	public function onUserBeforeDelete($user)
 	{
+		$application = JFactory::getApplication();
 		// Get the deleted user
 		$joomlaUser =& JFactory::getUser($user['username']);
 		$userID = $joomlaUser->id;
@@ -104,13 +101,47 @@ class plgUserFormulize extends JPlugin
 				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError deleting user/'), 'error');
 		}
 	
-		// For debugging
-		// Need the call to getApplication() inside the function!!!
-		// Will be removed anyway...
-		$application = JFactory::getApplication();
+		// For debugging	
 		$application->enqueueMessage(JText::_('User id:'.$userID), 'message');
 		
         return true;
     }
+	/* Note to Jeff:
+		Need to create the table formulize_external_group_mapping
+	*/
+	public function onUserAfterSaveGroup($context, $group, $isnew)
+	{
+		$application = JFactory::getApplication();
+		// Get the group
+		$name = $group->title;
+		$id = $group->id;
+		$groupData = array();
+		$groupData['name'] = $name;
+		$groupData['groupid'] = $id; 
+		$formulizeGroup = new FormulizeGroup($groupData);
+		
+		// Create or update a group in Formulize
+		if($isnew)
+		{
+			// Create a user in Formulize
+			$flag = Formulize::createGroup($formulizeGroup);
+			if ( !$flag ) {
+				$application->enqueueMessage(JText::_('Group id:'.$group->id.'\nError creating new group'), 'error');
+			}
+		}
+		/*
+		else
+		{
+			// Update a user in Formulize
+			$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
+			if ( !$flag ) {
+				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError updating user/'), 'error');
+			}
+		}
+		*/
+		// For debugging
+		$application->enqueueMessage(JText::_('Name: '.$formulizeGroup->get('name')), 'message');
+		$application->enqueueMessage(JText::_('Id: '.$formulizeGroup->get('groupid')), 'message');
+	}
 }
 ?>
