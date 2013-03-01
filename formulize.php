@@ -109,35 +109,24 @@ class plgUserFormulize extends JPlugin
 		// Get previous memberships of user
 		$previousGroups = $GLOBALS['previousGroups'];
 		
-		// This portion of code needs refactoring*********************************
-		
-		// Need to create a Formulize user instead
-		// For some reason, I can't
 		// Create a new blank user for Formulize session
-		$formulizeUser =& JFactory::getUser(0);
-		$formulizeUser->uid = $userId;
-		$formulizeUser->uname = $user['name'];
-		$formulizeUser->login_name = $user['username'];
-		$formulizeUser->email = $user['email'];
-		
 		$userData = array();
 		$userData['uid'] = $userId;
 		$userData['uname'] = $user['name'];
 		$userData['login_name'] = $user['username'];
 		$userData['email'] = $user['email'];
+		$userData['timezone_offset'] = 0;
 		
 		// Create a new Formulize user
-		// Not the right object!
 		$newUser = new FormulizeUser($userData);
 		
-		//$application->enqueueMessage(JText::_('Info:'.$newUser), 'message');
-		
-		// ***********************************************************************
+		// For debugging, will be removed
+		$application->enqueueMessage(JText::_('User Id:'.$newUser->get('uid')), 'message');
 		
 		// Create or update the user in Formulize
 		if($isnew) // Create
 		{
-			$flag = Formulize::createUser($formulizeUser);
+			$flag = Formulize::createUser($newUser);
 			// Display error message if necessary
 			if ( !$flag ) {
 				$application->enqueueMessage(JText::_('User id:'.$userID.' Error creating new user'), 'error');
@@ -151,8 +140,8 @@ class plgUserFormulize extends JPlugin
 		}
 		else // Update
 		{
-			$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
-			//$flag = Formulize::updateUser($userId, $userData);
+			//$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
+			$flag = Formulize::updateUser($userId, $userData);
 			// Display error message if necessary
 			if ( !$flag ) {
 				$application->enqueueMessage(JText::_('User id:'.$userID.' Error updating user/'), 'error');
