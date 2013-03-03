@@ -6,19 +6,8 @@ defined('_JEXEC') or die('Restricted access');
 // Get the path to Formulize stored as a component parameters
 $params = JComponentHelper::getParams( 'com_formulize' );
 $formulize_path = $params->get('formulize_path');
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-// TODO: Is this the place to put it?
-Formulize::init();
-$application = JFactory::getApplication();
-
-=======
-=======
 // Include the API
->>>>>>> 1c71fb8b9204ee2db50d2238598ad2f8429b4767
 require_once $formulize_path."/integration_api.php";
->>>>>>> 86a8172f1d5bd430b94d32b8353a85711e9bff26
 
 /*
 General comments:
@@ -219,23 +208,10 @@ class plgUserFormulize extends JPlugin
 		$flag = Formulize::deleteUser($userID);
 		// Display error message if necessary
 		if ( !$flag ) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-			$application->enqueueMessage(JText::_('User id:'.$userID.'\nError deleting user/'), 'error');
-		}
-		// For debugging
-=======
-				$application->enqueueMessage(JText::_('User id:'.$userID.'\nError deleting user/'), 'error');
-		}
-	
-		// For debugging	
->>>>>>> 86a8172f1d5bd430b94d32b8353a85711e9bff26
-=======
 				$application->enqueueMessage(JText::_('User id:'.$userID.' Error deleting user/'), 'error');
 		}
 	
 		// For debugging, will be removed	
->>>>>>> 1c71fb8b9204ee2db50d2238598ad2f8429b4767
 		$application->enqueueMessage(JText::_('User id:'.$userID), 'message');
 		
         return true;
