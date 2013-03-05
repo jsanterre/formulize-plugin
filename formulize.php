@@ -19,7 +19,7 @@ General comments:
 		}
 		-Need to create the table formulize_external_group_mapping
  
-** Still need to find and event triggered by batch processing...
+** Still need to find an event triggered by batch processing...
 */
 
 class plgUserFormulize extends JPlugin
@@ -64,30 +64,35 @@ class plgUserFormulize extends JPlugin
 		// Get a reference to current application in order to display message
 		$application = JFactory::getApplication();
 		
-		// Get the userId by email (maybe better by username?)
-		$email = $user['email'];
-		$userId = self::getUserId($email);
-		
-		// Display error message, if necessary
-		if($userId<0) {
-			$application->enqueueMessage(JText::_('Username '.$user['username'].': Error querying the database'), 'error');
-			return false;
+		if($isnew) { // New user and no previous memberships
+			$previousGroups = array();
 		}
+		else { // Existing user, get its previous memberships
+			// Get the userId by email (maybe better by username?)
+			$email = $user['email'];
+			$userId = self::getUserId($email);
 		
-		// Get previous memberships
-		$previousGroups = self::getGroup($userId);
+			// Display error message, if necessary
+			if($userId<0) {
+				$application->enqueueMessage(JText::_('Username '.$user['username'].': Error querying the database'), 'error');
+				return false;
+			}
 		
-		// Display error message, if necessary
-		if($previousGroups<0) {
-			$application->enqueueMessage(JText::_('Username '.$user['username'].': Error querying the database'), 'error');
-			return false;
+			// Get previous memberships
+			$previousGroups = self::getGroup($userId);
+		
+			// Display error message, if necessary
+			if($previousGroups<0) {
+				$application->enqueueMessage(JText::_('Username '.$user['username'].': Error querying the database'), 'error');
+				return false;
+			}
 		}
 		
 		// Store those previous groups in a global variable
 		$GLOBALS['previousGroups'] = $previousGroups;
 		
 		// For debugging, will be removed
-		$application->enqueueMessage(JText::_('User id:'.$userId), 'message');
+		$application->enqueueMessage(JText::_('New:'.$isnew), 'message');
 		
         return true;
     }
@@ -140,11 +145,10 @@ class plgUserFormulize extends JPlugin
 		}
 		else // Update
 		{
-			//$flag = Formulize::updateUser($formulizeUser->uid, $formulizeUser);
 			$flag = Formulize::updateUser($userId, $userData);
 			// Display error message if necessary
 			if ( !$flag ) {
-				$application->enqueueMessage(JText::_('User id:'.$userID.' Error updating user/'), 'error');
+				$application->enqueueMessage(JText::_('User id:'.$userID.' Error updating user'), 'error');
 			}
 		}
 		
@@ -162,7 +166,7 @@ class plgUserFormulize extends JPlugin
 				$flag = Formulize::removeUserFromGroup($userId, $prevGroup);
 				// Display error message if necessary
 				if ( !$flag ) {
-					$application->enqueueMessage(JText::_('User id:'.$prevGroup.' Error removing user from group/'), 'error');
+					$application->enqueueMessage(JText::_('Group id:'.$prevGroup.' Error removing user from group/'), 'error');
 				}
 				$application->enqueueMessage(JText::_('Removed from:'.$prevGroup), 'message');	
 			}
