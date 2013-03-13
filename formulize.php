@@ -89,6 +89,7 @@ class plgUserFormulize extends JPlugin
 		}
 		
 		// Store those previous groups in a global variable
+		// Maybe better not to use super global...
 		$GLOBALS['previousGroups'] = $previousGroups;
 		
 		// For debugging, will be removed
@@ -350,7 +351,7 @@ class plgUserFormulize extends JPlugin
 				$parent = self::getParent($parents, $parent);
 			}
 		}
-		// remove duplicates
+		// Remove duplicates
 		$groups = array_unique($groups);
 		
 		// Return the array containing groups
