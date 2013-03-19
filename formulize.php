@@ -122,8 +122,8 @@
 				// Store the user info in an array 
 				$userData = array();
 				$userData['uid'] = $userId;
-				$userData['uname'] = $user['name'];
-				$userData['login_name'] = $user['username'];
+				$userData['uname'] = $user['username'];
+				$userData['login_name'] = $user['name'];
 				$userData['email'] = $user['email'];
 				$userData['timezone_offset'] = 0;
 				
