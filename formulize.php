@@ -40,7 +40,7 @@
 			}
 			
 			// Set $GLOBALS to pass the user's Id to the Formulize system
-			$GLOBALS['joomlaUserId'] = $userId;
+			$GLOBALS['formulizeHostSystemUserId'] = $userId;
 			
 			// Start the session in formulize
 			Formulize::init();
